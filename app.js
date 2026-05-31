@@ -1197,7 +1197,7 @@ function openProduct(id) {
       <h2 id="modalTitle">${activeProduct.title}</h2>
       <span class="product-id-chip">ID: ${activeProduct.id}</span>
       <strong class="price">${money(activeProduct.price)}</strong>
-      <p>${activeProduct.description}</p>
+      <p class="preview-description">${activeProduct.description}</p>
       <div class="meta-row">
         <span>Stock disponible</span>
         <strong>${activeProduct.stock}</strong>
