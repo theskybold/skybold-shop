@@ -414,6 +414,10 @@ document.querySelectorAll("[data-close]").forEach((button) => {
   });
 });
 
+productModal.addEventListener("close", () => {
+  document.body.classList.remove("product-modal-open");
+});
+
 searchButton.addEventListener("click", applyCatalogSearch);
 searchInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -1266,6 +1270,7 @@ function openProduct(id) {
   document.querySelector("#openImageViewer").addEventListener("click", () => {
     openImageViewer(document.querySelector("#previewImage").src, galleryImages);
   });
+  document.body.classList.add("product-modal-open");
   productModal.showModal();
 }
 
@@ -1437,6 +1442,9 @@ async function openAdmin() {
 function closeDialog(dialog) {
   if (!dialog?.open) return;
   dialog.close();
+  if (dialog === productModal) {
+    document.body.classList.remove("product-modal-open");
+  }
   if (dialog === adminModal && window.location.pathname === "/admin") {
     window.history.pushState({}, "", "/");
   }

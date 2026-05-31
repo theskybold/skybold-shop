@@ -51,6 +51,10 @@ body {
   font-family: "Nunito", Arial, Helvetica, sans-serif;
 }
 
+body.product-modal-open {
+  overflow: hidden;
+}
+
 button,
 input,
 select,
@@ -1620,32 +1624,6 @@ img {
     grid-template-columns: 1fr;
   }
 
-  .preview-actions {
-    position: fixed;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
-    z-index: 50;
-    grid-template-columns: minmax(106px, 0.72fr) minmax(0, 1fr) minmax(0, 1fr);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
-    box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.28);
-    padding: 10px;
-    backdrop-filter: blur(14px);
-  }
-
-  .preview-actions .quantity-picker {
-    grid-column: auto;
-    width: 100%;
-  }
-
-  .preview-actions .primary-link,
-  .preview-actions .secondary-button {
-    min-height: 46px;
-    padding-inline: 8px;
-  }
-
   .featured-grid,
   .product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1700,21 +1678,127 @@ img {
     display: none;
   }
 
-  .preview-image {
-    min-height: 330px;
+  #productModal {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: hidden;
   }
 
-  #productModal {
-    overflow: auto;
+  #productModal .close-button {
+    top: 10px;
+    right: 10px;
+    width: 42px;
+    height: 42px;
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(12px);
   }
 
   .product-preview {
-    height: auto;
-    padding-bottom: 156px;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(150px, 27dvh) minmax(0, 1fr);
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  .preview-image {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .preview-image img {
+    height: 100%;
+    object-fit: cover;
   }
 
   .preview-info {
-    overflow: visible;
+    display: grid;
+    grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto auto auto auto;
+    align-content: stretch;
+    gap: 7px;
+    min-height: 0;
+    overflow: hidden;
+    padding: 12px 14px max(12px, env(safe-area-inset-bottom));
+  }
+
+  .preview-info .eyebrow {
+    margin-bottom: 0;
+    font-size: 10px;
+  }
+
+  .preview-info h2 {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: clamp(22px, 7vw, 30px);
+    line-height: 1.05;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .preview-info .price {
+    font-size: 16px;
+  }
+
+  .preview-description {
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    margin: 0;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .preview-info .meta-row {
+    font-size: 13px;
+  }
+
+  .selection-hint {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .variant-list {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .variant-list button {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 7px 10px;
+    white-space: nowrap;
+  }
+
+  .preview-actions {
+    grid-template-columns: minmax(96px, 0.7fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-self: end;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .preview-actions .quantity-picker {
+    grid-column: auto;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .preview-actions .primary-link,
+  .preview-actions .secondary-button {
+    min-height: 44px;
+    padding: 8px;
+    font-size: 14px;
   }
 
   .cart-item,
@@ -1759,15 +1843,15 @@ img {
 }
 
 @media (max-width: 430px) {
-  .product-preview {
-    padding-bottom: 184px;
-  }
-
   .preview-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .preview-actions .quantity-picker {
     grid-column: 1 / -1;
+  }
+
+  .preview-description {
+    font-size: 13px;
   }
 }
