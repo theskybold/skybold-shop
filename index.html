@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SKYBOLD SHOP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#inicio" aria-label="Ir al inicio">
+        <img class="brand-logo" src="logo_transparente_theskybold.png" alt="" />
+        <span>SKYBOLD SHOP</span>
+      </a>
+      <nav class="nav-links" aria-label="Principal">
+        <a href="#inicio">Inicio</a>
+        <a href="#productos">Productos</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <div class="header-actions">
+        <button class="cart-button" id="cartOpen" type="button" aria-label="Abrir carrito" title="Carrito">
+          <svg class="cart-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M6 6h15l-1.7 8.4a2 2 0 0 1-2 1.6H9.1a2 2 0 0 1-2-1.6L5.2 3H2" />
+            <circle cx="9" cy="20" r="1.5" />
+            <circle cx="18" cy="20" r="1.5" />
+          </svg>
+          <span id="cartCount">0</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <div class="hero-copy">
+          <p class="eyebrow">SKYBOLD SHOP</p>
+          <h1>Productos seleccionados, pedido directo por WhatsApp</h1>
+          <p>
+            Revisa modelos, colores o tallas, arma tu carrito y envia tu pedido con un mensaje listo.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#productos">Ver productos</a>
+            <button class="secondary-link" id="heroCart" type="button">Ver carrito</button>
+          </div>
+          <div class="hero-benefits" aria-label="Beneficios de compra">
+            <span>Pedido por WhatsApp</span>
+            <span>Vista previa grande</span>
+            <span>Modelos con imagen</span>
+          </div>
+        </div>
+        <div class="hero-showcase" id="heroShowcase" aria-label="Productos destacados"></div>
+      </section>
+
+      <section class="category-strip" aria-label="Categorias rapidas">
+        <div>
+          <p class="eyebrow">Categorias</p>
+          <h2>Compra por tipo de producto</h2>
+        </div>
+        <div class="quick-categories" id="quickCategories"></div>
+      </section>
+
+      <section class="featured-band" aria-label="Destacados grandes">
+        <div class="section-heading">
+          <p class="eyebrow">Destacados</p>
+          <h2>Lo mas visto</h2>
+        </div>
+        <div class="featured-grid" id="featuredGrid"></div>
+      </section>
+
+      <section class="products-section" id="productos">
+        <div class="section-heading">
+          <p class="eyebrow">Catalogo</p>
+          <h2>Productos</h2>
+        </div>
+        <div class="toolbar">
+          <label class="search-box">
+            <span>Buscar</span>
+            <span class="search-action-wrap">
+              <input id="searchInput" type="search" placeholder="Nombre, color o modelo" />
+              <button class="search-button" id="searchButton" type="button" aria-label="Buscar">Buscar</button>
+            </span>
+          </label>
+          <label class="search-box">
+            <span>Categoria</span>
+            <select id="categoryFilter"></select>
+          </label>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+        <div class="catalog-footer">
+          <p class="catalog-status" id="catalogStatus"></p>
+          <div class="pagination" id="pagination" aria-label="Paginas de productos"></div>
+        </div>
+      </section>
+
+      <section class="trust-section" aria-label="Confianza de compra">
+        <div class="trust-item">
+          <strong>Stock confirmado</strong>
+          <span>Validamos disponibilidad antes de cerrar tu pedido.</span>
+        </div>
+        <div class="trust-item">
+          <strong>Pedido claro</strong>
+          <span>WhatsApp recibe producto, ID, modelo y cantidad.</span>
+        </div>
+        <div class="trust-item">
+          <strong>Entrega coordinada</strong>
+          <span>Detalles de entrega y pago se confirman por chat.</span>
+        </div>
+      </section>
+
+      <section class="contact-section" id="contacto">
+        <div class="contact-copy">
+          <p class="eyebrow">Contacto</p>
+          <h2>Atencion directa para tu pedido</h2>
+          <p>Escribenos para confirmar stock, colores, tallas o detalles de entrega antes de comprar.</p>
+          <div class="contact-points">
+            <span>Confirmacion de disponibilidad</span>
+            <span>Consulta de modelos</span>
+            <span>Coordinacion por WhatsApp</span>
+          </div>
+        </div>
+        <div class="contact-card">
+          <span class="contact-label">WhatsApp</span>
+          <strong>+51 925 080 132</strong>
+          <a class="primary-link whatsapp-buy" id="contactWhatsapp" target="_blank" rel="noreferrer">
+            <svg class="whatsapp-icon" aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M12 2.5a9.2 9.2 0 0 0-7.8 14.1L3 21l4.5-1.2A9.2 9.2 0 1 0 12 2.5Z" />
+              <path d="M8.8 7.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.1 3.3 5.2 4.5 2.6 1 3.1.8 3.7.8.6-.1 1.8-.8 2.1-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.4l-1.9-.9c-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2.1-.4 0-.6l-.8-1.9Z" />
+            </svg>
+            Escribir ahora
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <button class="theme-toggle floating-theme" id="themeToggle" type="button" aria-label="Cambiar a tema claro">
+      <span class="theme-dot" aria-hidden="true"></span>
+      <span id="themeLabel">Claro</span>
+    </button>
+
+    <dialog class="modal" id="productModal" aria-labelledby="modalTitle">
+      <button class="close-button" data-close="productModal" type="button" aria-label="Cerrar">x</button>
+      <div class="product-preview" id="productPreview"></div>
+    </dialog>
+
+    <dialog class="modal image-modal" id="imageModal" aria-label="Vista previa de imagen">
+      <button class="close-button" data-close="imageModal" type="button" aria-label="Cerrar">x</button>
+      <div class="image-viewer">
+        <img id="imageViewerMain" alt="Vista previa ampliada" />
+        <div class="image-thumbs" id="imageViewerThumbs"></div>
+      </div>
+    </dialog>
+
+    <dialog class="modal side-modal" id="cartModal" aria-labelledby="cartTitle">
+      <button class="close-button" data-close="cartModal" type="button" aria-label="Cerrar">x</button>
+      <h2 id="cartTitle">Tu carrito</h2>
+      <div class="cart-list" id="cartList"></div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total estimado</span>
+          <strong id="cartTotal">S/ 0.00</strong>
+        </div>
+        <button class="secondary-button full-width" id="clearCart" type="button">Vaciar carrito</button>
+        <a class="primary-link full-width" id="cartWhatsapp" target="_blank" rel="noreferrer">Enviar pedido</a>
+      </div>
+    </dialog>
+
+    <dialog class="modal admin-modal" id="adminModal" aria-labelledby="adminTitle">
+      <div id="loginPanel">
+        <h2 id="adminTitle">Panel privado</h2>
+        <p class="muted">Ingresa con tu correo de administrador para agregar o editar productos.</p>
+        <form class="admin-form" id="loginForm">
+          <label>
+            Correo
+            <input id="username" type="email" autocomplete="username" required />
+          </label>
+          <label>
+            Contrasena
+            <input id="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" type="submit">Entrar</button>
+          <p class="form-message" id="loginMessage"></p>
+        </form>
+      </div>
+
+      <div class="admin-workspace hidden" id="adminWorkspace">
+        <div class="admin-top">
+          <div>
+            <p class="eyebrow">Privado</p>
+            <h2>Editar productos</h2>
+          </div>
+          <button class="secondary-button" id="logoutAdmin" type="button">Cerrar sesion</button>
+        </div>
+        <form class="admin-form product-form" id="productForm">
+          <input id="productId" type="hidden" />
+          <section class="admin-card wide">
+            <div class="admin-card-heading">
+              <div>
+                <p class="eyebrow">Paso 1</p>
+                <h3>Datos del producto</h3>
+              </div>
+              <span class="edit-badge" id="editModeBadge">Nuevo producto</span>
+            </div>
+            <div class="admin-grid">
+              <label>
+                Titulo
+                <input id="formTitle" required />
+              </label>
+              <label>
+                Precio
+                <input id="formPrice" type="number" min="0" step="0.1" required />
+              </label>
+              <label>
+                Stock
+                <input id="formStock" type="number" min="0" step="1" required />
+              </label>
+              <label>
+                Categoria
+                <select id="formCategory" required></select>
+              </label>
+              <label class="category-create hidden" id="newCategoryWrap">
+                Nueva categoria
+                <input id="newCategoryInput" placeholder="Ej. Ropa, Tecnologia, Accesorios" />
+              </label>
+              <label class="wide">
+                Descripcion
+                <textarea id="formDescription" rows="4" required></textarea>
+              </label>
+              <label class="check-row">
+                <input id="formFeatured" type="checkbox" />
+                Producto destacado
+              </label>
+            </div>
+          </section>
+
+          <section class="admin-card wide">
+            <div class="admin-card-heading">
+              <div>
+                <p class="eyebrow">Paso 2</p>
+                <h3>Imagen principal</h3>
+              </div>
+            </div>
+            <div class="image-admin-grid">
+              <div class="image-preview-box">
+                <img id="formImagePreview" alt="Vista previa de imagen principal" />
+              </div>
+              <div class="admin-grid">
+                <label class="wide">
+                  URL de imagen
+                  <input id="formImage" type="text" placeholder="https://..." />
+                </label>
+                <label class="wide">
+                  O subir foto local
+                  <input id="formImageFile" type="file" accept="image/*" />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-card wide">
+            <div class="admin-card-heading">
+              <div>
+                <p class="eyebrow">Paso 3</p>
+                <h3>Colores, modelos o tallas</h3>
+              </div>
+              <button class="secondary-button" id="addVariant" type="button">Agregar opcion</button>
+            </div>
+            <div class="variant-editor-list" id="variantEditorList"></div>
+          </section>
+
+          <div class="sticky-save-bar wide">
+            <p class="save-message" id="saveMessage"></p>
+            <div class="form-actions">
+              <button class="secondary-button" id="newProduct" type="button">Nuevo</button>
+              <button class="primary-button" type="submit">Guardar cambios</button>
+            </div>
+          </div>
+        </form>
+        <div class="admin-list-tools">
+          <label class="search-box">
+            <span>Buscar en productos</span>
+            <input id="adminSearchInput" type="search" placeholder="Nombre, ID, categoria o variante" />
+          </label>
+          <label class="search-box">
+            <span>Productos por pagina</span>
+            <select id="productsPerPageSetting">
+              <option value="4">4</option>
+              <option value="8">8</option>
+              <option value="12">12</option>
+              <option value="16">16</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+        </div>
+        <div class="admin-products" id="adminProducts"></div>
+      </div>
+    </dialog>
+
+    <footer class="site-footer">
+      <div>
+        <a class="brand footer-brand" href="#inicio" aria-label="Ir al inicio">
+          <img class="brand-logo" src="logo_transparente_theskybold.png" alt="" />
+          <span>SKYBOLD SHOP</span>
+        </a>
+        <p>Catalogo visual con pedidos por WhatsApp.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#productos">Productos</a>
+        <a href="#contacto">Contacto</a>
+        <a href="/admin">Admin</a>
+      </div>
+      <div class="footer-contact">
+        <span>WhatsApp</span>
+        <strong>+51 925 080 132</strong>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
