@@ -199,6 +199,30 @@
           </div>
           <button class="secondary-button" id="logoutAdmin" type="button">Cerrar sesion</button>
         </div>
+        <div class="admin-dashboard" id="adminDashboard"></div>
+        <section class="admin-card wide store-settings-card">
+          <div class="admin-card-heading">
+            <div>
+              <p class="eyebrow">Ajustes</p>
+              <h3>Tienda</h3>
+            </div>
+          </div>
+          <div class="admin-grid">
+            <label>
+              Nombre de tienda
+              <input id="settingStoreName" placeholder="SKYBOLD SHOP" />
+            </label>
+            <label>
+              WhatsApp
+              <input id="settingWhatsapp" placeholder="51925080132" />
+            </label>
+            <label class="wide">
+              Texto de inicio
+              <input id="settingHeroText" placeholder="Revisa modelos, colores o tallas..." />
+            </label>
+          </div>
+          <button class="secondary-button" id="saveStoreSettings" type="button">Guardar ajustes</button>
+        </section>
         <form class="admin-form product-form" id="productForm">
           <input id="productId" type="hidden" />
           <section class="admin-card wide">
@@ -219,6 +243,10 @@
                 <input id="formPrice" type="number" min="0" step="0.1" required />
               </label>
               <label>
+                Precio anterior
+                <input id="formOldPrice" type="number" min="0" step="0.1" placeholder="Opcional" />
+              </label>
+              <label>
                 Stock
                 <input id="formStock" type="number" min="0" step="1" required />
               </label>
@@ -237,6 +265,10 @@
               <label class="check-row">
                 <input id="formFeatured" type="checkbox" />
                 Producto destacado
+              </label>
+              <label class="check-row">
+                <input id="formActive" type="checkbox" checked />
+                Producto activo
               </label>
             </div>
           </section>
@@ -263,6 +295,18 @@
                 </label>
               </div>
             </div>
+          </section>
+          <section class="admin-card wide">
+            <div class="admin-card-heading">
+              <div>
+                <p class="eyebrow">Paso 2.5</p>
+                <h3>Galeria extra</h3>
+              </div>
+            </div>
+            <label class="wide">
+              URLs de imagenes extra
+              <textarea id="formGallery" rows="3" placeholder="Una URL por linea"></textarea>
+            </label>
           </section>
 
           <section class="admin-card wide">
@@ -301,6 +345,15 @@
           </label>
         </div>
         <div class="admin-products" id="adminProducts"></div>
+      </div>
+    </dialog>
+
+    <dialog class="modal confirm-modal" id="deleteConfirmModal" aria-labelledby="deleteConfirmTitle">
+      <h2 id="deleteConfirmTitle">Eliminar producto</h2>
+      <p id="deleteConfirmText">Esta accion no se puede deshacer.</p>
+      <div class="form-actions">
+        <button class="secondary-button" id="cancelDelete" type="button">Cancelar</button>
+        <button class="primary-button danger-button" id="confirmDelete" type="button">Eliminar</button>
       </div>
     </dialog>
 

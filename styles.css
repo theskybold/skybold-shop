@@ -584,6 +584,13 @@ img {
   font-weight: 900;
 }
 
+.old-price {
+  margin-right: 7px;
+  color: var(--muted);
+  font-size: 0.82em;
+  text-decoration: line-through;
+}
+
 .product-id-chip,
 .product-id-line {
   color: var(--muted);
@@ -1440,6 +1447,31 @@ img {
   gap: 10px;
 }
 
+.admin-dashboard {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.dashboard-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  padding: 12px;
+}
+
+.dashboard-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.dashboard-card strong {
+  font-size: 24px;
+}
+
 .admin-list-tools {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(170px, 220px);
@@ -1466,11 +1498,23 @@ img {
 
 .admin-row-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
 }
 
 .admin-row-actions button {
   padding-inline: 12px;
+}
+
+.confirm-modal {
+  width: min(420px, calc(100vw - 24px));
+  padding: 22px;
+}
+
+.danger-button {
+  color: #fff;
+  background: var(--danger);
 }
 
 .hidden {
@@ -1849,6 +1893,11 @@ img {
   .admin-workspace {
     display: grid;
     gap: 14px;
+  }
+
+  .admin-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
   }
 
   .admin-top {

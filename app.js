@@ -1,4 +1,4 @@
-const WHATSAPP_NUMBER = "51925080132";
+const DEFAULT_WHATSAPP_NUMBER = "51925080132";
 const ADMIN_USER = "admin";
 const ADMIN_PASSWORD = "1234";
 const SUPABASE_URL = "https://scdhvnsxcfzgevahkanw.supabase.co";
@@ -337,6 +337,8 @@ const seedProducts = [
   }
 ];
 
+let productExtras = JSON.parse(localStorage.getItem("tiendaExpressProductExtras") || "{}");
+let storeSettings = JSON.parse(localStorage.getItem("tiendaExpressStoreSettings") || "{}");
 let products = loadProducts();
 let cart = loadCart();
 let activeProduct = null;
@@ -348,6 +350,7 @@ let selectedQuantity = 1;
 let productsPerPage = loadProductsPerPage();
 let mainImageFile = null;
 let dataReady = false;
+let pendingDeleteId = null;
 
 const productGrid = document.querySelector("#productGrid");
 const featuredGrid = document.querySelector("#featuredGrid");
@@ -387,6 +390,15 @@ const newCategoryWrap = document.querySelector("#newCategoryWrap");
 const newCategoryInput = document.querySelector("#newCategoryInput");
 const adminSearchInput = document.querySelector("#adminSearchInput");
 const productsPerPageSetting = document.querySelector("#productsPerPageSetting");
+const adminDashboard = document.querySelector("#adminDashboard");
+const settingStoreName = document.querySelector("#settingStoreName");
+const settingWhatsapp = document.querySelector("#settingWhatsapp");
+const settingHeroText = document.querySelector("#settingHeroText");
+const formOldPrice = document.querySelector("#formOldPrice");
+const formActive = document.querySelector("#formActive");
+const formGallery = document.querySelector("#formGallery");
+const deleteConfirmModal = document.querySelector("#deleteConfirmModal");
+const deleteConfirmText = document.querySelector("#deleteConfirmText");
 
 setTheme(localStorage.getItem(STORAGE_THEME) || "dark");
 productsPerPageSetting.value = String(productsPerPage);
@@ -399,6 +411,9 @@ adminQuickOpen.addEventListener("click", () => {
 clearCartButton.addEventListener("click", clearCart);
 themeToggle.addEventListener("click", toggleTheme);
 document.querySelector("#contactWhatsapp").href = whatsappLink("Hola, quiero hacer una consulta sobre los productos.");
+document.querySelector("#saveStoreSettings").addEventListener("click", saveStoreSettingsFromAdmin);
+document.querySelector("#cancelDelete").addEventListener("click", () => closeDialog(deleteConfirmModal));
+document.querySelector("#confirmDelete").addEventListener("click", confirmDeleteProduct);
 
 document.querySelectorAll("[data-close]").forEach((button) => {
   button.addEventListener("click", () => {
@@ -531,22 +546,26 @@ productForm.addEventListener("submit", async (event) => {
       id,
       title: document.querySelector("#formTitle").value.trim(),
       price: Number(document.querySelector("#formPrice").value),
+      oldPrice: Number(formOldPrice.value) || 0,
       stock: Number(document.querySelector("#formStock").value),
       category,
       variants: uploadedVariants.filter((variant) => variant.name),
       image: uploadedMainImage || seedProducts[0].image,
       description: document.querySelector("#formDescription").value.trim(),
-      featured: document.querySelector("#formFeatured").checked
+      featured: document.querySelector("#formFeatured").checked,
+      active: formActive.checked,
+      gallery: formGallery.value.split("\n").map((url) => url.trim()).filter(Boolean)
     };
 
     await saveProductRemote(updatedProduct);
     products = products.some((product) => product.id === id)
       ? products.map((product) => product.id === id ? updatedProduct : product)
       : [updatedProduct, ...products];
-    saveProducts();
-    resetProductForm();
-    renderAll();
-    renderAdminProducts();
+  saveProducts();
+  resetProductForm();
+  renderAll();
+  renderAdminDashboard();
+  renderAdminProducts();
     saveMessage.textContent = "Cambios guardados.";
     setTimeout(() => {
       saveMessage.textContent = "";
@@ -649,22 +668,27 @@ async function loadRemoteProducts() {
 async function loadRemoteSettings() {
   const { data, error } = await supabaseClient
     .from("store_settings")
-    .select("value")
-    .eq("key", "products_per_page")
-    .maybeSingle();
+    .select("key,value")
+    .in("key", ["products_per_page", "product_extras", "store_info"]);
 
-  if (error || !data?.value?.value) {
+  if (error) {
     return;
   }
 
-  const remoteValue = Number(data.value.value);
+  const settings = Object.fromEntries(data.map((entry) => [entry.key, entry.value]));
+  const remoteValue = Number(settings.products_per_page?.value);
   if (![4, 8, 12, 16, 20].includes(remoteValue)) {
-    return;
+    // keep local default
+  } else {
+    productsPerPage = remoteValue;
+    productsPerPageSetting.value = String(remoteValue);
+    localStorage.setItem(STORAGE_PRODUCTS_PER_PAGE, String(remoteValue));
   }
 
-  productsPerPage = remoteValue;
-  productsPerPageSetting.value = String(remoteValue);
-  localStorage.setItem(STORAGE_PRODUCTS_PER_PAGE, String(remoteValue));
+  productExtras = settings.product_extras || productExtras;
+  storeSettings = { ...storeSettings, ...(settings.store_info || {}) };
+  localStorage.setItem("tiendaExpressProductExtras", JSON.stringify(productExtras));
+  localStorage.setItem("tiendaExpressStoreSettings", JSON.stringify(storeSettings));
 }
 
 async function saveProductsPerPageSetting() {
@@ -683,6 +707,49 @@ async function saveProductsPerPageSetting() {
   if (error) {
     console.warn("No se pudo guardar el ajuste de paginacion", error);
   }
+}
+
+async function saveJsonSetting(key, value) {
+  if (!(await ensureSupabase()) || !(await hasSession())) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("store_settings")
+    .upsert({ key, value, updated_at: new Date().toISOString() });
+
+  if (error) throw error;
+}
+
+async function saveProductExtras() {
+  localStorage.setItem("tiendaExpressProductExtras", JSON.stringify(productExtras));
+  await saveJsonSetting("product_extras", productExtras);
+}
+
+async function saveStoreSettingsFromAdmin() {
+  storeSettings = {
+    ...storeSettings,
+    name: settingStoreName.value.trim() || "SKYBOLD SHOP",
+    whatsapp: settingWhatsapp.value.trim() || DEFAULT_WHATSAPP_NUMBER,
+    heroText: settingHeroText.value.trim()
+  };
+  localStorage.setItem("tiendaExpressStoreSettings", JSON.stringify(storeSettings));
+  await saveJsonSetting("store_info", storeSettings);
+  applyStoreSettings();
+  saveMessage.textContent = "Ajustes guardados.";
+}
+
+function applyStoreSettings() {
+  const name = storeSettings.name || "SKYBOLD SHOP";
+  document.querySelectorAll(".brand span, .footer-brand span").forEach((entry) => {
+    entry.textContent = name;
+  });
+  const heroParagraph = document.querySelector(".hero-copy > p:not(.eyebrow)");
+  if (storeSettings.heroText && heroParagraph) heroParagraph.textContent = storeSettings.heroText;
+  settingStoreName.value = name;
+  settingWhatsapp.value = storeSettings.whatsapp || DEFAULT_WHATSAPP_NUMBER;
+  settingHeroText.value = storeSettings.heroText || "";
+  document.querySelector("#contactWhatsapp").href = whatsappLink("Hola, quiero hacer una consulta sobre los productos.");
 }
 
 async function signInAdmin(email, password, message) {
@@ -761,6 +828,12 @@ async function requireAdminSession() {
 
 async function saveProductRemote(product) {
   await requireAdminSession();
+  productExtras[product.id] = {
+    oldPrice: product.oldPrice || 0,
+    active: product.active !== false,
+    sortOrder: product.sortOrder || products.length + 1,
+    gallery: product.gallery || []
+  };
 
   const productRow = localProductToRemote(product);
   const { error: productError } = await supabaseClient
@@ -797,6 +870,8 @@ async function saveProductRemote(product) {
       throw variantError;
     }
   }
+
+  await saveProductExtras();
 }
 
 async function seedRemoteProductsIfEmpty() {
@@ -874,6 +949,7 @@ function localProductToRemote(product) {
     image_url: product.image,
     description: product.description,
     featured: product.featured,
+    sort_order: product.sortOrder || 0,
     updated_at: new Date().toISOString()
   };
 }
@@ -895,7 +971,8 @@ function remoteProductToLocal(product) {
     variants,
     featured: product.featured,
     image: product.image_url,
-    description: product.description
+    description: product.description,
+    sortOrder: product.sort_order
   });
 }
 
@@ -914,8 +991,13 @@ function loadProductsPerPage() {
 }
 
 function normalizeProduct(product) {
+  const extra = productExtras[product.id] || {};
   return {
     ...product,
+    oldPrice: Number(product.oldPrice ?? extra.oldPrice ?? 0),
+    active: product.active ?? extra.active ?? true,
+    sortOrder: Number(product.sortOrder ?? extra.sortOrder ?? 0),
+    gallery: product.gallery ?? extra.gallery ?? [],
     variants: normalizeVariants(product.variants)
   };
 }
@@ -959,7 +1041,7 @@ function money(value) {
 }
 
 function whatsappLink(message) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${storeSettings.whatsapp || DEFAULT_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 function productMessage(product, quantity = 1, variant = null) {
@@ -977,13 +1059,21 @@ function cartMessage() {
   const lines = cart.map((item, index) => {
     const product = products.find((entry) => entry.id === item.id);
     if (!product) return "";
-    const variantLine = item.variantName ? ` (${item.variantName})` : "";
-    return `${index + 1}. ${product.title}${variantLine} x${item.quantity} - ${money(product.price * item.quantity)}`;
+    return [
+      `Producto ${index + 1}: ${product.title}`,
+      `ID: ${product.id}`,
+      item.variantName ? `Color/modelo: ${item.variantName}` : "",
+      `Precio unitario: ${money(product.price)}`,
+      `Cantidad: ${item.quantity}`,
+      `Subtotal: ${money(product.price * item.quantity)}`
+    ].filter(Boolean).join("\n");
   }).filter(Boolean);
 
   return [
-    "Hola, quiero hacer este pedido:",
-    ...lines,
+    "Hola, quiero comprar estos productos:",
+    "",
+    lines.join("\n--------------------\n"),
+    "",
     `Total estimado: ${money(cart.reduce((sum, item) => {
       const product = products.find((entry) => entry.id === item.id);
       return sum + (product ? product.price * item.quantity : 0);
@@ -993,6 +1083,7 @@ function cartMessage() {
 }
 
 function renderAll() {
+  applyStoreSettings();
   renderCategories();
   renderQuickCategories();
   renderAdminCategoryOptions();
@@ -1000,6 +1091,14 @@ function renderAll() {
   renderFeatured();
   renderCatalog();
   renderCart();
+}
+
+function visibleProducts() {
+  return products.filter((product) => product.active !== false);
+}
+
+function sortedProducts(list = products) {
+  return [...list].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || a.title.localeCompare(b.title));
 }
 
 function renderCategories() {
@@ -1028,7 +1127,11 @@ function renderQuickCategories() {
 }
 
 function productCategories() {
-  return [...new Set(products.map((product) => product.category).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  return [...new Set(visibleProducts().map((product) => product.category).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+function priceMarkup(product) {
+  return `${product.oldPrice ? `<span class="old-price">${money(product.oldPrice)}</span>` : ""}${money(product.price)}`;
 }
 
 function renderAdminCategoryOptions(selectedCategory = formCategory.value) {
@@ -1064,7 +1167,7 @@ function currentFormCategory() {
 }
 
 function renderHero() {
-  const heroProducts = products.filter((product) => product.featured).slice(0, 3);
+  const heroProducts = sortedProducts(visibleProducts()).filter((product) => product.featured).slice(0, 3);
   const [mainProduct, ...sideProducts] = heroProducts;
 
   if (!mainProduct) {
@@ -1102,13 +1205,13 @@ function renderHero() {
 }
 
 function renderFeatured() {
-  const featured = products.filter((product) => product.featured).slice(0, 3);
+  const featured = sortedProducts(visibleProducts()).filter((product) => product.featured).slice(0, 3);
   featuredGrid.innerHTML = featured.map((product) => `
     <article class="featured-card" data-product="${product.id}">
       <div class="image-wrap"><img src="${product.image}" alt="${product.title}" loading="lazy"></div>
       <div class="card-body">
         <strong>${product.title}</strong>
-        <span class="price">${money(product.price)}</span>
+        <span class="price">${priceMarkup(product)}</span>
       </div>
     </article>
   `).join("");
@@ -1118,7 +1221,7 @@ function renderFeatured() {
 function renderCatalog() {
   const search = committedSearch.toLowerCase();
   const category = categoryFilter.value || "Todos";
-  const filtered = products.filter((product) => {
+  const filtered = sortedProducts(visibleProducts()).filter((product) => {
     const text = [product.id, product.title, product.description, product.category, variantNames(product).join(" ")].join(" ").toLowerCase();
     const matchesSearch = !search || text.includes(search);
     const matchesCategory = category === "Todos" || product.category === category;
@@ -1135,8 +1238,8 @@ function renderCatalog() {
       <div class="card-body">
         <strong>${product.title}</strong>
         <div class="meta-row">
-          <span class="price">${money(product.price)}</span>
-          <span>${product.stock} en stock</span>
+          <span class="price">${priceMarkup(product)}</span>
+          <span>${product.stock > 0 ? `${product.stock} en stock` : "Agotado"}</span>
         </div>
       </div>
     </article>
@@ -1200,11 +1303,11 @@ function openProduct(id) {
       <p class="eyebrow">${activeProduct.category}</p>
       <h2 id="modalTitle">${activeProduct.title}</h2>
       <span class="product-id-chip">ID: ${activeProduct.id}</span>
-      <strong class="price">${money(activeProduct.price)}</strong>
+      <strong class="price">${priceMarkup(activeProduct)}</strong>
       <p class="preview-description">${activeProduct.description}</p>
       <div class="meta-row">
-        <span>Stock disponible</span>
-        <strong>${activeProduct.stock}</strong>
+        <span>${activeProduct.stock > 0 ? "Stock disponible" : "Estado"}</span>
+        <strong>${activeProduct.stock > 0 ? activeProduct.stock : "Agotado"}</strong>
       </div>
       ${variants.length ? `<p class="selection-hint" id="selectionHint">Elige color, modelo o talla para continuar.</p>` : ""}
       <div class="variant-list" id="previewVariants">
@@ -1221,8 +1324,8 @@ function openProduct(id) {
           <span id="selectedQty">1</span>
           <button id="qtyMore" type="button" aria-label="Aumentar cantidad">+</button>
         </div>
-        <button class="secondary-button" id="modalAddCart" type="button">Agregar al carrito</button>
-        <a class="primary-link whatsapp-buy ${variants.length ? "disabled-link" : ""}" id="modalBuyLink" href="${variants.length ? "#" : whatsappLink(productMessage(activeProduct))}" target="_blank" rel="noreferrer" aria-disabled="${variants.length ? "true" : "false"}">
+        <button class="secondary-button" id="modalAddCart" type="button" ${activeProduct.stock <= 0 ? "disabled" : ""}>Agregar al carrito</button>
+        <a class="primary-link whatsapp-buy ${variants.length || activeProduct.stock <= 0 ? "disabled-link" : ""}" id="modalBuyLink" href="${variants.length || activeProduct.stock <= 0 ? "#" : whatsappLink(productMessage(activeProduct))}" target="_blank" rel="noreferrer" aria-disabled="${variants.length || activeProduct.stock <= 0 ? "true" : "false"}">
           <svg class="whatsapp-icon" aria-hidden="true" viewBox="0 0 24 24">
             <path d="M12 2.5a9.2 9.2 0 0 0-7.8 14.1L3 21l4.5-1.2A9.2 9.2 0 1 0 12 2.5Z" />
             <path d="M8.8 7.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1.1 2.8 1.2 3c.1.2 2.1 3.3 5.2 4.5 2.6 1 3.1.8 3.7.8.6-.1 1.8-.8 2.1-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.6-.4l-1.9-.9c-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2.1-.4 0-.6l-.8-1.9Z" />
@@ -1236,6 +1339,10 @@ function openProduct(id) {
   document.querySelector("#qtyLess").addEventListener("click", () => changeSelectedQuantity(-1));
   document.querySelector("#qtyMore").addEventListener("click", () => changeSelectedQuantity(1));
   document.querySelector("#modalAddCart").addEventListener("click", () => {
+    if (activeProduct.stock <= 0) {
+      showSelectionRequired("Este producto esta agotado.");
+      return;
+    }
     if (variants.length && !activeVariant) {
       showSelectionRequired();
       return;
@@ -1245,9 +1352,9 @@ function openProduct(id) {
     showCartFeedback();
   });
   document.querySelector("#modalBuyLink").addEventListener("click", (event) => {
-    if (variants.length && !activeVariant) {
+    if (activeProduct.stock <= 0 || (variants.length && !activeVariant)) {
       event.preventDefault();
-      showSelectionRequired();
+      showSelectionRequired(activeProduct.stock <= 0 ? "Este producto esta agotado." : undefined);
     }
   });
   productPreview.querySelectorAll("[data-preview-variant]").forEach((button) => {
@@ -1295,6 +1402,7 @@ function showCartFeedback() {
 function productGalleryImages(product) {
   const images = [
     { label: "Principal", src: product.image },
+    ...(product.gallery || []).map((src, index) => ({ label: `Foto ${index + 2}`, src })),
     ...normalizeVariants(product.variants)
       .filter((variant) => variant.image)
       .map((variant) => ({ label: variant.name, src: variant.image }))
@@ -1324,10 +1432,10 @@ function openImageViewer(selectedSrc, images) {
   imageModal.showModal();
 }
 
-function showSelectionRequired() {
+function showSelectionRequired(message = "Primero elige color, modelo o talla.") {
   const hint = document.querySelector("#selectionHint");
   if (!hint) return;
-  hint.textContent = "Primero elige color, modelo o talla.";
+  hint.textContent = message;
   hint.classList.add("needs-selection");
 }
 
@@ -1454,6 +1562,7 @@ function showAdminWorkspace() {
   loginPanel.classList.add("hidden");
   adminWorkspace.classList.remove("hidden");
   updateAdminQuickButton(true);
+  renderAdminDashboard();
   renderAdminProducts();
 }
 
@@ -1467,9 +1576,57 @@ function updateAdminQuickButton(isAdmin) {
   adminQuickOpen.classList.toggle("hidden", !isAdmin);
 }
 
+async function moveProduct(id, direction) {
+  const ordered = sortedProducts(products);
+  const index = ordered.findIndex((product) => product.id === id);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= ordered.length) return;
+  [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+  ordered.forEach((product, order) => {
+    product.sortOrder = order + 1;
+    productExtras[product.id] = { ...(productExtras[product.id] || {}), sortOrder: product.sortOrder };
+  });
+  products = ordered;
+  saveProducts();
+  await saveProductExtras();
+  renderAll();
+  renderAdminDashboard();
+  renderAdminProducts();
+}
+
+function openDeleteConfirm(id) {
+  const product = products.find((entry) => entry.id === id);
+  pendingDeleteId = id;
+  deleteConfirmText.textContent = `Vas a eliminar "${product?.title || id}". Esta accion no se puede deshacer.`;
+  deleteConfirmModal.showModal();
+}
+
+async function confirmDeleteProduct() {
+  if (!pendingDeleteId) return;
+  try {
+    saveMessage.textContent = "Eliminando producto...";
+    await deleteProductRemote(pendingDeleteId);
+    delete productExtras[pendingDeleteId];
+    await saveProductExtras();
+    products = products.filter((product) => product.id !== pendingDeleteId);
+    cart = cart.filter((item) => item.id !== pendingDeleteId);
+    saveProducts();
+    saveCart();
+    closeDialog(deleteConfirmModal);
+    pendingDeleteId = null;
+    renderAll();
+    renderAdminDashboard();
+    renderAdminProducts();
+    saveMessage.textContent = "Producto eliminado.";
+  } catch (error) {
+    console.error(error);
+    saveMessage.textContent = "No se pudo eliminar. Revisa tu sesion o conexion.";
+  }
+}
+
 function renderAdminProducts() {
   const search = adminSearchInput.value.trim().toLowerCase();
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = sortedProducts(products).filter((product) => {
     const text = [product.id, product.title, product.category, product.description, variantNames(product).join(" ")].join(" ").toLowerCase();
     return !search || text.includes(search);
   });
@@ -1480,10 +1637,14 @@ function renderAdminProducts() {
       <div>
         <strong>${product.title}</strong>
         <div class="product-id-line">ID: ${product.id}</div>
-        <div class="muted">${money(product.price)} - ${product.category} - Stock ${product.stock}</div>
+        <div class="muted">${money(product.price)} ${product.oldPrice ? `(antes ${money(product.oldPrice)})` : ""} - ${product.category} - ${product.stock > 0 ? `Stock ${product.stock}` : "Agotado"}</div>
+        <div class="muted">${product.active === false ? "Oculto" : "Activo"} - ${product.featured ? "Destacado" : "Normal"}</div>
         <div class="muted">${variantNames(product).length || "Sin"} opciones de color/modelo</div>
       </div>
       <div class="admin-row-actions">
+        <button type="button" data-view="${product.id}">Ver</button>
+        <button type="button" data-up="${product.id}">Arriba</button>
+        <button type="button" data-down="${product.id}">Abajo</button>
         <button type="button" data-edit="${product.id}">Editar</button>
         <button type="button" data-delete="${product.id}">Eliminar</button>
       </div>
@@ -1493,27 +1654,33 @@ function renderAdminProducts() {
   adminProducts.querySelectorAll("[data-edit]").forEach((button) => {
     button.addEventListener("click", () => fillProductForm(button.dataset.edit));
   });
-  adminProducts.querySelectorAll("[data-delete]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      try {
-        saveMessage.textContent = "Eliminando producto...";
-        await deleteProductRemote(button.dataset.delete);
-        products = products.filter((product) => product.id !== button.dataset.delete);
-        cart = cart.filter((item) => item.id !== button.dataset.delete);
-        saveProducts();
-        saveCart();
-        renderAll();
-        renderAdminProducts();
-        saveMessage.textContent = "Producto eliminado.";
-        setTimeout(() => {
-          saveMessage.textContent = "";
-        }, 1800);
-      } catch (error) {
-        console.error(error);
-        saveMessage.textContent = "No se pudo eliminar. Revisa tu sesion o conexion.";
-      }
-    });
+  adminProducts.querySelectorAll("[data-view]").forEach((button) => {
+    button.addEventListener("click", () => openProduct(button.dataset.view));
   });
+  adminProducts.querySelectorAll("[data-up]").forEach((button) => {
+    button.addEventListener("click", () => moveProduct(button.dataset.up, -1));
+  });
+  adminProducts.querySelectorAll("[data-down]").forEach((button) => {
+    button.addEventListener("click", () => moveProduct(button.dataset.down, 1));
+  });
+  adminProducts.querySelectorAll("[data-delete]").forEach((button) => {
+    button.addEventListener("click", () => openDeleteConfirm(button.dataset.delete));
+  });
+}
+
+function renderAdminDashboard() {
+  const total = products.length;
+  const active = products.filter((product) => product.active !== false).length;
+  const out = products.filter((product) => product.stock <= 0).length;
+  const featured = products.filter((product) => product.featured).length;
+  const categories = productCategories().length;
+  adminDashboard.innerHTML = [
+    ["Productos", total],
+    ["Activos", active],
+    ["Agotados", out],
+    ["Destacados", featured],
+    ["Categorias", categories]
+  ].map(([label, value]) => `<div class="dashboard-card"><span>${label}</span><strong>${value}</strong></div>`).join("");
 }
 
 function fillProductForm(id) {
@@ -1522,11 +1689,14 @@ function fillProductForm(id) {
   document.querySelector("#productId").value = product.id;
   document.querySelector("#formTitle").value = product.title;
   document.querySelector("#formPrice").value = product.price;
+  formOldPrice.value = product.oldPrice || "";
   document.querySelector("#formStock").value = product.stock;
   renderAdminCategoryOptions(product.category);
   formImage.value = product.image;
   document.querySelector("#formDescription").value = product.description;
   document.querySelector("#formFeatured").checked = product.featured;
+  formActive.checked = product.active !== false;
+  formGallery.value = (product.gallery || []).join("\n");
   adminVariantDraft = normalizeVariants(product.variants).map((variant) => ({ ...variant }));
   editModeBadge.textContent = "Editando producto";
   saveMessage.textContent = "";
@@ -1539,6 +1709,9 @@ function resetProductForm() {
   productForm.reset();
   mainImageFile = null;
   document.querySelector("#productId").value = "";
+  formActive.checked = true;
+  formOldPrice.value = "";
+  formGallery.value = "";
   renderAdminCategoryOptions("");
   adminVariantDraft = [];
   editModeBadge.textContent = "Nuevo producto";
