@@ -132,6 +132,7 @@ img {
 }
 
 .icon-button,
+.admin-quick-button,
 .cart-button,
 .secondary-button,
 .secondary-link,
@@ -147,6 +148,7 @@ img {
 }
 
 .icon-button:hover,
+.admin-quick-button:hover,
 .cart-button:hover,
 .secondary-button:hover,
 .secondary-link:hover,
@@ -190,10 +192,10 @@ img {
   background: var(--accent);
 }
 
+.admin-quick-button,
 .cart-button {
   position: fixed;
   top: 14px;
-  right: clamp(12px, 3vw, 24px);
   z-index: 35;
   display: inline-flex;
   align-items: center;
@@ -202,6 +204,14 @@ img {
   height: 48px;
   min-height: 48px;
   padding: 0;
+}
+
+.cart-button {
+  right: clamp(12px, 3vw, 24px);
+}
+
+.admin-quick-button {
+  right: calc(clamp(12px, 3vw, 24px) + 58px);
 }
 
 .cart-button span {
@@ -220,7 +230,8 @@ img {
   padding-inline: 5px;
 }
 
-.cart-icon {
+.cart-icon,
+.user-icon {
   width: 23px;
   height: 23px;
   fill: none;
@@ -1543,9 +1554,17 @@ img {
     display: flex;
   }
 
+  .admin-quick-button,
   .cart-button {
     top: 10px;
+  }
+
+  .cart-button {
     right: 10px;
+  }
+
+  .admin-quick-button {
+    right: 66px;
   }
 
   .floating-theme {

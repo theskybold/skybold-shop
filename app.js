@@ -369,6 +369,7 @@ const cartCount = document.querySelector("#cartCount");
 const cartTotal = document.querySelector("#cartTotal");
 const cartWhatsapp = document.querySelector("#cartWhatsapp");
 const clearCartButton = document.querySelector("#clearCart");
+const adminQuickOpen = document.querySelector("#adminQuickOpen");
 const adminModal = document.querySelector("#adminModal");
 const loginPanel = document.querySelector("#loginPanel");
 const adminWorkspace = document.querySelector("#adminWorkspace");
@@ -391,6 +392,10 @@ setTheme(localStorage.getItem(STORAGE_THEME) || "dark");
 productsPerPageSetting.value = String(productsPerPage);
 document.querySelector("#cartOpen").addEventListener("click", openCart);
 document.querySelector("#heroCart").addEventListener("click", openCart);
+adminQuickOpen.addEventListener("click", () => {
+  window.history.pushState({}, "", "/admin");
+  openAdmin();
+});
 clearCartButton.addEventListener("click", clearCart);
 themeToggle.addEventListener("click", toggleTheme);
 document.querySelector("#contactWhatsapp").href = whatsappLink("Hola, quiero hacer una consulta sobre los productos.");
@@ -701,14 +706,17 @@ async function signInAdmin(email, password, message) {
 
 async function restoreAdminSession() {
   if (!supabaseClient || localStorage.getItem(STORAGE_ADMIN_SESSION) !== "true") {
+    updateAdminQuickButton(false);
     return;
   }
 
   if (!(await verifyAdmin())) {
     localStorage.removeItem(STORAGE_ADMIN_SESSION);
+    updateAdminQuickButton(false);
     return;
   }
 
+  updateAdminQuickButton(true);
   if (window.location.pathname === "/admin") {
     showAdminWorkspace();
   }
@@ -1437,12 +1445,18 @@ function closeDialog(dialog) {
 function showAdminWorkspace() {
   loginPanel.classList.add("hidden");
   adminWorkspace.classList.remove("hidden");
+  updateAdminQuickButton(true);
   renderAdminProducts();
 }
 
 function showAdminLogin() {
   loginPanel.classList.remove("hidden");
   adminWorkspace.classList.add("hidden");
+  updateAdminQuickButton(false);
+}
+
+function updateAdminQuickButton(isAdmin) {
+  adminQuickOpen.classList.toggle("hidden", !isAdmin);
 }
 
 function renderAdminProducts() {
