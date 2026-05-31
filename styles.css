@@ -1249,6 +1249,13 @@ img {
   padding: 28px;
 }
 
+.admin-close-button {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin: 0 0 -46px auto;
+}
+
 .admin-form {
   display: grid;
   gap: 14px;
@@ -1801,6 +1808,146 @@ img {
     font-size: 14px;
   }
 
+  .admin-modal {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    overflow-y: auto;
+    padding: 0 14px max(16px, env(safe-area-inset-bottom));
+  }
+
+  .admin-modal .admin-close-button {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 80;
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    float: none;
+    border-color: var(--line);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  #loginPanel,
+  .admin-workspace {
+    padding-top: 64px;
+  }
+
+  #loginPanel {
+    display: grid;
+    align-content: center;
+    min-height: 100dvh;
+    padding-bottom: 24px;
+  }
+
+  .admin-workspace {
+    display: grid;
+    gap: 14px;
+  }
+
+  .admin-top {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    align-items: center;
+    margin: 0 -14px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    padding: 12px 64px 12px 14px;
+    backdrop-filter: blur(14px);
+  }
+
+  .admin-top h2 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  .admin-top .eyebrow {
+    margin-bottom: 2px;
+  }
+
+  #logoutAdmin {
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .product-form {
+    gap: 12px;
+    margin: 0;
+  }
+
+  .admin-card {
+    padding: 13px;
+  }
+
+  .admin-card-heading {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .admin-card-heading h3 {
+    font-size: 18px;
+  }
+
+  .edit-badge {
+    width: fit-content;
+  }
+
+  .image-preview-box {
+    width: min(160px, 100%);
+  }
+
+  .variant-editor-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    align-items: start;
+    padding: 10px;
+  }
+
+  .variant-editor-row .secondary-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .variant-fields {
+    gap: 10px;
+  }
+
+  .sticky-save-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 70;
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 0 -14px;
+    border-inline: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    padding: 10px 14px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .sticky-save-bar .form-actions {
+    display: grid;
+    grid-template-columns: 0.78fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .save-message {
+    min-height: 18px;
+  }
+
+  .admin-list-tools {
+    margin-top: 2px;
+  }
+
   .cart-item,
   .admin-row {
     grid-template-columns: 58px 1fr;
@@ -1816,23 +1963,10 @@ img {
     justify-items: start;
   }
 
-  .variant-editor-row .secondary-button {
-    width: 100%;
-  }
-
   .sticky-save-bar,
   .admin-card-heading {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .sticky-save-bar {
-    align-items: center;
-    flex-direction: row;
-  }
-
-  .sticky-save-bar .form-actions {
-    flex-wrap: nowrap;
   }
 
   .sticky-save-bar .primary-button,
